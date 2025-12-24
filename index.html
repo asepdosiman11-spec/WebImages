@@ -577,6 +577,11 @@
         }
         
         function getVideoUrl(fileId) {
+            // Menggunakan Google Drive preview URL untuk streaming video
+            return `https://drive.google.com/file/d/${fileId}/preview`;
+        }
+        
+        function getVideoDownloadUrl(fileId) {
             return `https://drive.google.com/uc?export=download&id=${fileId}`;
         }
 
@@ -639,7 +644,7 @@
                 card.className = 'memory-card';
                 
                 const isVid = isVideo(file.mimeType);
-                const mediaUrl = isVid ? getVideoUrl(file.id) : getMediaUrl(file.id);
+                const mediaUrl = isVid ? file.id : getMediaUrl(file.id); // Simpan ID untuk video
                 
                 const date = new Date(file.createdTime).toLocaleDateString('id-ID', {
                     day: 'numeric',
@@ -765,15 +770,12 @@
             mediaContainer.innerHTML = '';
             
             if (isVid) {
-                const video = document.createElement('video');
-                video.src = mediaUrl;
-                video.controls = true;
-                video.autoplay = true;
-                video.style.maxWidth = '100%';
-                video.style.maxHeight = '85vh';
-                video.style.borderRadius = '15px';
-                video.style.boxShadow = '0 20px 80px rgba(0,0,0,0.8)';
-                mediaContainer.appendChild(video);
+                // Menggunakan iframe untuk embed video dari Google Drive
+                const iframe = document.createElement('iframe');
+                iframe.src = `https://drive.google.com/file/d/${mediaUrl}/preview`;
+                iframe.style.cssText = 'width: 90vw; max-width: 1200px; height: 70vh; border: none; border-radius: 15px; box-shadow: 0 20px 80px rgba(0,0,0,0.8);';
+                iframe.allow = 'autoplay';
+                mediaContainer.appendChild(iframe);
             } else {
                 const img = document.createElement('img');
                 img.id = 'lightbox-img';
@@ -791,11 +793,8 @@
             const lightbox = document.getElementById('lightbox');
             const mediaContainer = document.getElementById('lightbox-media');
             
-            const video = mediaContainer.querySelector('video');
-            if (video) {
-                video.pause();
-                video.src = '';
-            }
+            // Clear iframe untuk stop video
+            mediaContainer.innerHTML = '';
             
             lightbox.classList.remove('active');
             document.body.style.overflow = 'auto';
@@ -883,24 +882,18 @@
             const caption = document.getElementById('slideshow-caption');
             const progress = document.getElementById('slideshow-progress');
             
-            const existing = content.querySelector('img, video');
+            const existing = content.querySelector('img, iframe');
             if (existing) {
-                if (existing.tagName === 'VIDEO') {
-                    existing.pause();
-                }
                 existing.remove();
             }
             
             if (media.isVideo) {
-                const video = document.createElement('video');
-                video.src = media.url;
-                video.controls = true;
-                video.autoplay = true;
-                video.style.maxWidth = '100%';
-                video.style.maxHeight = '75vh';
-                video.style.borderRadius = '15px';
-                video.style.boxShadow = '0 20px 80px rgba(0,0,0,0.7)';
-                content.insertBefore(video, caption);
+                // Menggunakan iframe untuk video
+                const iframe = document.createElement('iframe');
+                iframe.src = `https://drive.google.com/file/d/${media.url}/preview`;
+                iframe.style.cssText = 'width: 80vw; max-width: 1200px; height: 65vh; border: none; border-radius: 15px; box-shadow: 0 20px 80px rgba(0,0,0,0.7);';
+                iframe.allow = 'autoplay';
+                content.insertBefore(iframe, caption);
             } else {
                 const img = document.createElement('img');
                 img.src = media.url;
