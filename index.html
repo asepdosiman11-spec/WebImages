@@ -524,7 +524,7 @@
 
     <script>
         // ⚠️ GANTI dengan Folder ID dan API Key Anda
-        const FOLDER_ID = '16CRDkaSa9b8NoMCXoAKgJ2LYiz1YNwlO';
+        const FOLDER_ID = '1ZqjiL9QGwfu9dpwThdDFyDRRGJh75aNY';
         const API_KEY = 'AIzaSyBGHQX0nUKYjATK-eQTlB99OcsgVnL0vHM';
         
         let allMedia = [];
@@ -543,14 +543,41 @@
         }
 
         async function getMediaFromFolder(folderId) {
-            const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,mimeType,createdTime,thumbnailLink)&orderBy=createdTime desc&key=${API_KEY}`;
-            const response = await fetch(url);
-            const data = await response.json();
-            return data.files || [];
+            let allFiles = [];
+            let pageToken = null;
+            
+            do {
+                let url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+(mimeType+contains+'image/'+or+mimeType+contains+'video/')&fields=files(id,name,mimeType,createdTime,thumbnailLink),nextPageToken&orderBy=createdTime desc&pageSize=1000&key=${API_KEY}`;
+                
+                if (pageToken) {
+                    url += `&pageToken=${pageToken}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.files) {
+                    allFiles = allFiles.concat(data.files);
+                }
+                
+                pageToken = data.nextPageToken;
+                
+            } while (pageToken);
+            
+            console.log(`Found ${allFiles.length} media files in folder`);
+            return allFiles;
+        }
+        
+        function isVideo(mimeType) {
+            return mimeType && mimeType.startsWith('video/');
         }
 
         function getMediaUrl(fileId) {
             return `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+        }
+        
+        function getVideoUrl(fileId) {
+            return `https://drive.google.com/uc?export=download&id=${fileId}`;
         }
 
         async function renderFolder(folderId, folderName, container) {
@@ -568,7 +595,7 @@
             header.innerHTML = `
                 <div class="folder-title">
                     📁 ${folderName}
-                    <span class="folder-count">${folderMedia.length} foto</span>
+                    <span class="folder-count">${folderMedia.length} item</span>
                 </div>
                 <button class="folder-toggle" onclick="toggleFolder('${folderId}')">
                     Lihat Semua
@@ -581,6 +608,16 @@
             previewMedia.forEach(file => {
                 const item = document.createElement('div');
                 item.className = 'preview-item';
+                
+                const isVid = isVideo(file.mimeType);
+                
+                if (isVid) {
+                    const badge = document.createElement('div');
+                    badge.className = 'video-badge';
+                    badge.innerHTML = '▶';
+                    badge.style.cssText = 'position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; padding: 0.3rem 0.6rem; border-radius: 20px; font-size: 0.75rem; z-index: 10;';
+                    item.appendChild(badge);
+                }
                 
                 const img = document.createElement('img');
                 img.src = getMediaUrl(file.id);
@@ -601,7 +638,8 @@
                 const card = document.createElement('div');
                 card.className = 'memory-card';
                 
-                const mediaUrl = getMediaUrl(file.id);
+                const isVid = isVideo(file.mimeType);
+                const mediaUrl = isVid ? getVideoUrl(file.id) : getMediaUrl(file.id);
                 
                 const date = new Date(file.createdTime).toLocaleDateString('id-ID', {
                     day: 'numeric',
@@ -611,9 +649,17 @@
 
                 const photoFrame = document.createElement('div');
                 photoFrame.className = 'photo-frame';
+                
+                if (isVid) {
+                    const indicator = document.createElement('div');
+                    indicator.className = 'video-indicator';
+                    indicator.textContent = '▶';
+                    indicator.style.cssText = 'position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.8); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; z-index: 10;';
+                    photoFrame.appendChild(indicator);
+                }
 
                 const img = document.createElement('img');
-                img.src = mediaUrl;
+                img.src = getMediaUrl(file.id);
                 img.alt = file.name;
                 img.loading = 'lazy';
                 photoFrame.appendChild(img);
@@ -624,12 +670,13 @@
                 
                 card.appendChild(photoFrame);
                 card.appendChild(caption);
-                card.onclick = () => openLightbox(mediaUrl, `${folderName} • ${date}`);
+                card.onclick = () => openLightbox(mediaUrl, `${folderName} • ${date}`, isVid);
                 gallery.appendChild(card);
 
                 allMedia.push({
                     url: mediaUrl,
-                    caption: `${folderName} • ${date}`
+                    caption: `${folderName} • ${date}`,
+                    isVideo: isVid
                 });
             });
 
@@ -681,10 +728,12 @@
                     container.innerHTML = `
                         <div style="text-align: center; padding: 4rem 2rem; color: var(--secondary);">
                             <p style="font-size: 2rem; margin-bottom: 1rem;">📷</p>
-                            <h2 style="font-family: 'Playfair Display', serif; margin-bottom: 1rem;">Belum Ada Foto</h2>
-                            <p>Upload foto ke Google Drive folder untuk memulai galeri Anda!</p>
+                            <h2 style="font-family: 'Playfair Display', serif; margin-bottom: 1rem;">Belum Ada Media</h2>
+                            <p>Upload foto atau video ke Google Drive folder untuk memulai galeri Anda!</p>
                         </div>
                     `;
+                } else {
+                    console.log(`✅ Total ${allMedia.length} media dimuat (foto + video)`);
                 }
 
             } catch (error) {
@@ -708,12 +757,31 @@
             }
         }
 
-        function openLightbox(mediaUrl, caption) {
+        function openLightbox(mediaUrl, caption, isVid = false) {
             const lightbox = document.getElementById('lightbox');
-            const img = document.getElementById('lightbox-img');
+            const mediaContainer = document.getElementById('lightbox-media');
             const captionEl = document.getElementById('lightbox-caption');
             
-            img.src = mediaUrl;
+            mediaContainer.innerHTML = '';
+            
+            if (isVid) {
+                const video = document.createElement('video');
+                video.src = mediaUrl;
+                video.controls = true;
+                video.autoplay = true;
+                video.style.maxWidth = '100%';
+                video.style.maxHeight = '85vh';
+                video.style.borderRadius = '15px';
+                video.style.boxShadow = '0 20px 80px rgba(0,0,0,0.8)';
+                mediaContainer.appendChild(video);
+            } else {
+                const img = document.createElement('img');
+                img.id = 'lightbox-img';
+                img.src = mediaUrl;
+                img.alt = caption;
+                mediaContainer.appendChild(img);
+            }
+            
             captionEl.textContent = caption;
             lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -721,13 +789,21 @@
 
         function closeLightbox() {
             const lightbox = document.getElementById('lightbox');
+            const mediaContainer = document.getElementById('lightbox-media');
+            
+            const video = mediaContainer.querySelector('video');
+            if (video) {
+                video.pause();
+                video.src = '';
+            }
+            
             lightbox.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
 
         function toggleSlideshow() {
             if (allMedia.length === 0) {
-                alert('Belum ada foto!');
+                alert('Belum ada foto atau video!');
                 return;
             }
 
@@ -807,13 +883,30 @@
             const caption = document.getElementById('slideshow-caption');
             const progress = document.getElementById('slideshow-progress');
             
-            const existing = content.querySelector('img');
-            if (existing) existing.remove();
+            const existing = content.querySelector('img, video');
+            if (existing) {
+                if (existing.tagName === 'VIDEO') {
+                    existing.pause();
+                }
+                existing.remove();
+            }
             
-            const img = document.createElement('img');
-            img.src = media.url;
-            img.alt = media.caption;
-            content.insertBefore(img, caption);
+            if (media.isVideo) {
+                const video = document.createElement('video');
+                video.src = media.url;
+                video.controls = true;
+                video.autoplay = true;
+                video.style.maxWidth = '100%';
+                video.style.maxHeight = '75vh';
+                video.style.borderRadius = '15px';
+                video.style.boxShadow = '0 20px 80px rgba(0,0,0,0.7)';
+                content.insertBefore(video, caption);
+            } else {
+                const img = document.createElement('img');
+                img.src = media.url;
+                img.alt = media.caption;
+                content.insertBefore(img, caption);
+            }
             
             caption.textContent = media.caption;
             progress.textContent = `${index + 1} / ${allMedia.length}`;
@@ -872,4 +965,3 @@
     </script>
 </body>
 </html>
-
