@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galeri Kenangan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8B7355;
+            --secondary: #D4A574;
+            --accent: #E8C4A0;
+            --dark: #3E2723;
+            --light: #FFF8F0;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #FFF8F0 0%, #F5E6D3 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        .floating-memory {
+            position: absolute;
+            font-size: 3rem;
+            animation: float 20s infinite ease-in-out;
+            opacity: 0.3;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-100px) rotate(180deg); }
+        }
+
+        /* Header */
+        header {
+            position: relative;
+            text-align: center;
+            padding: 4rem 2rem 3rem;
+            background: linear-gradient(180deg, rgba(139, 115, 85, 0.1) 0%, transparent 100%);
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 4rem);
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: clamp(0.9rem, 2vw, 1.2rem);
+            color: var(--primary);
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        /* Polaroid Style Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Masonry Grid */
+        .gallery {
+            column-count: 4;
+            column-gap: 2rem;
+            padding: 1rem;
+        }
+
+        @media (max-width: 1200px) {
+            .gallery { column-count: 3; }
+        }
+
+        @media (max-width: 768px) {
+            .gallery { column-count: 2; }
+        }
+
+        @media (max-width: 480px) {
+            .gallery { column-count: 1; }
+        }
+
+        /* Polaroid Card */
+        .memory-card {
+            break-inside: avoid;
+            margin-bottom: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .polaroid {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            transform: rotate(0deg);
+            transition: all 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .memory-card:nth-child(3n+1) .polaroid {
+            transform: rotate(-2deg);
+        }
+
+        .memory-card:nth-child(3n+2) .polaroid {
+            transform: rotate(1deg);
+        }
+
+        .memory-card:nth-child(3n+3) .polaroid {
+            transform: rotate(-1deg);
+        }
+
+        .memory-card:hover .polaroid {
+            transform: rotate(0deg) scale(1.05) translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+            z-index: 10;
+        }
+
+        .photo-frame {
+            position: relative;
+            overflow: hidden;
+            background: #f0f0f0;
+            aspect-ratio: 1;
+        }
+
+        .photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .memory-card:hover .photo-frame img {
+            transform: scale(1.1);
+        }
+
+        .photo-caption {
+            padding: 1rem 0.5rem 0.5rem;
+            text-align: center;
+            font-family: 'Brush Script MT', cursive;
+            color: var(--dark);
+            font-size: 1rem;
+            min-height: 2.5rem;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1rem;
+            border: 4px solid var(--accent);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            padding: 2rem;
+            animation: fadeInLightbox 0.3s ease;
+        }
+
+        @keyframes fadeInLightbox {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .lightbox.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+            animation: zoomIn 0.3s ease;
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 85vh;
+            object-fit: contain;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            border-radius: 8px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: -3rem;
+            right: 0;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 3rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            font-weight: 300;
+            line-height: 1;
+        }
+
+        .lightbox-close:hover {
+            transform: rotate(90deg);
+        }
+
+        .lightbox-caption {
+            text-align: center;
+            color: white;
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            font-style: italic;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--primary);
+        }
+
+        .empty-state svg {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Instructions */
+        .instructions {
+            background: white;
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 800px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .instructions h2 {
+            color: var(--dark);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .instructions ol {
+            margin-left: 1.5rem;
+            line-height: 1.8;
+            color: var(--primary);
+        }
+
+        .instructions code {
+            background: var(--light);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+            color: var(--dark);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--primary);
+            font-style: italic;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="floating-memory" style="left: 10%; animation-delay: 0s;">📷</div>
+        <div class="floating-memory" style="left: 80%; animation-delay: 5s;">🎞️</div>
+        <div class="floating-memory" style="left: 50%; animation-delay: 10s;">💝</div>
+        <div class="floating-memory" style="left: 30%; animation-delay: 15s;">✨</div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <h1>✨ Galeri Kenangan ✨</h1>
+            <p class="subtitle">Setiap foto adalah cerita yang tak terlupakan</p>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Loading State -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p style="color: var(--primary); font-size: 1.2rem;">Memuat kenangan indah...</p>
+        </div>
+
+        <!-- Gallery -->
+        <div id="gallery" class="gallery"></div>
+
+        <!-- Empty State -->
+        <div id="empty" class="empty-state" style="display: none;">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <h2>Belum Ada Kenangan</h2>
+            <p>Upload foto pertama Anda ke Google Drive untuk memulai!</p>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            <h2>📋 Cara Menggunakan</h2>
+            <ol>
+                <li>Buka Google Drive dan buat folder khusus untuk galeri kenangan Anda</li>
+                <li>Klik kanan folder → Bagikan → Ubah ke "Siapa saja yang memiliki link dapat melihat"</li>
+                <li>Salin ID folder dari URL (contoh: <code>1a2B3c4D5e6F7g8H9i0J</code>)</li>
+                <li>Buka file HTML ini dengan text editor, cari <code>1ZqjiL9QGwfu9dpwThdDFyDRRGJh75aNY</code></li>
+                <li>Ganti dengan ID folder Anda, lalu save</li>
+                <li>Upload file HTML ini ke hosting gratis seperti Netlify, Vercel, atau GitHub Pages</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+            <img id="lightbox-img" src="" alt="">
+            <div id="lightbox-caption" class="lightbox-caption"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>💕 Dibuat dengan cinta untuk mengenang setiap momen berharga 💕</p>
+    </footer>
+
+    <script>
+        // ========================================
+        // KONFIGURASI - GANTI INI DENGAN ID FOLDER GOOGLE DRIVE ANDA
+        // ========================================
+        const FOLDER_ID = '1ZqjiL9QGwfu9dpwThdDFyDRRGJh75aNY';
+        const API_KEY = '785eccf19eb976505052d0a7257dfc0fc6b68dc6'; // Optional: untuk rate limit lebih besar
+        
+        // ========================================
+        // JANGAN EDIT DI BAWAH INI
+        // ========================================
+
+        async function loadGallery() {
+            const loading = document.getElementById('loading');
+            const gallery = document.getElementById('gallery');
+            const empty = document.getElementById('empty');
+
+            try {
+                // Menggunakan Google Drive API v3
+                const url = `https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,mimeType,createdTime,thumbnailLink)&orderBy=createdTime desc&key=${API_KEY}`;
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil data dari Google Drive');
+                }
+
+                const data = await response.json();
+                const files = data.files || [];
+
+                loading.style.display = 'none';
+
+                if (files.length === 0) {
+                    empty.style.display = 'block';
+                    return;
+                }
+
+                // Render images
+                files.forEach((file, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'memory-card';
+                    card.style.animationDelay = `${index * 0.1}s`;
+                    
+                    const imageUrl = `https://drive.google.com/uc?export=view&id=${file.id}`;
+                    const date = new Date(file.createdTime).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+
+                    card.innerHTML = `
+                        <div class="polaroid">
+                            <div class="photo-frame">
+                                <img src="${imageUrl}" alt="${file.name}" loading="lazy">
+                            </div>
+                            <div class="photo-caption">${date}</div>
+                        </div>
+                    `;
+
+                    card.onclick = () => openLightbox(imageUrl, date);
+                    gallery.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error('Error:', error);
+                loading.innerHTML = `
+                    <div style="color: #c0392b;">
+                        <p style="font-size: 2rem;">😔</p>
+                        <p>Maaf, terjadi kesalahan saat memuat galeri</p>
+                        <p style="font-size: 0.9rem; margin-top: 1rem; opacity: 0.7;">
+                            Pastikan Anda sudah mengatur FOLDER_ID dan API_KEY dengan benar
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        function openLightbox(imageUrl, caption) {
+            const lightbox = document.getElementById('lightbox');
+            const img = document.getElementById('lightbox-img');
+            const captionEl = document.getElementById('lightbox-caption');
+            
+            img.src = imageUrl;
+            captionEl.textContent = caption;
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close lightbox with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        // Close lightbox when clicking outside image
+        document.getElementById('lightbox').addEventListener('click', (e) => {
+            if (e.target.id === 'lightbox') closeLightbox();
+        });
+
+        // Load gallery on page load
+        loadGallery();
+
+        // Optional: Auto refresh every 5 minutes
+        setInterval(loadGallery, 300000);
+    </script>
+</body>
+</html>
