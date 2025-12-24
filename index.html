@@ -26,6 +26,7 @@
             font-family: 'Montserrat', sans-serif;
             background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
             min-height: 100vh;
+            overflow-x: hidden;
             color: var(--dark);
         }
 
@@ -40,6 +41,7 @@
             color: var(--dark);
             margin-bottom: 0.5rem;
             font-weight: 700;
+            letter-spacing: 1px;
         }
 
         .subtitle {
@@ -49,110 +51,144 @@
             font-style: italic;
         }
 
+        .play-controls {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .play-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px var(--shadow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.7rem;
+            letter-spacing: 0.5px;
+        }
+
+        .play-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px var(--shadow);
+        }
+
+        .play-btn.playing {
+            background: linear-gradient(135deg, #c06c84 0%, #a05270 100%);
+        }
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
         }
 
-        .config-panel {
+        .folder-card {
             background: white;
+            border-radius: 20px;
             padding: 2rem;
-            border-radius: 20px;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
             box-shadow: 0 10px 40px var(--shadow);
+            transition: all 0.4s ease;
         }
 
-        .config-panel h3 {
-            font-family: 'Playfair Display', serif;
-            color: var(--primary);
-            margin-bottom: 1rem;
+        .folder-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px var(--shadow);
         }
 
-        .input-group {
-            margin-bottom: 1rem;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 0.8rem;
-            border: 2px solid var(--accent);
-            border-radius: 10px;
-            font-size: 0.95rem;
-            font-family: monospace;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            font-size: 1rem;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 600;
-            box-shadow: 0 8px 25px var(--shadow);
-            transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px var(--shadow);
-        }
-
-        .status {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 15px;
-            margin-bottom: 2rem;
-            box-shadow: 0 5px 20px var(--shadow);
-        }
-
-        .status-item {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--accent);
+        .folder-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
-        .status-item:last-child {
-            border-bottom: none;
+        .folder-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            color: var(--dark);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
         }
 
-        .status-badge {
-            padding: 0.3rem 1rem;
-            border-radius: 20px;
+        .folder-count {
+            background: linear-gradient(135deg, var(--accent) 0%, #f5e6dc 100%);
+            color: var(--dark);
+            padding: 0.4rem 1.2rem;
+            border-radius: 30px;
             font-size: 0.85rem;
             font-weight: 600;
         }
 
-        .status-badge.loading {
-            background: #fff3cd;
-            color: #856404;
+        .folder-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
         }
 
-        .status-badge.success {
-            background: #d4edda;
-            color: #155724;
+        .preview-item {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
         }
 
-        .status-badge.error {
-            background: #f8d7da;
-            color: #721c24;
+        .preview-item:hover {
+            transform: scale(1.05);
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .folder-toggle {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .folder-toggle:hover {
+            background: var(--secondary);
+            transform: scale(1.05);
+        }
+
+        .folder-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .folder-content.open {
+            max-height: 10000px;
         }
 
         .gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 2rem;
+            margin-top: 2rem;
         }
 
         .memory-card {
@@ -160,12 +196,12 @@
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 8px 25px var(--shadow);
-            transition: all 0.4s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
         }
 
         .memory-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-10px) rotate(2deg);
             box-shadow: 0 15px 40px var(--shadow);
         }
 
@@ -184,7 +220,7 @@
         }
 
         .memory-card:hover .photo-frame img {
-            transform: scale(1.1);
+            transform: scale(1.15);
         }
 
         .photo-caption {
@@ -192,45 +228,147 @@
             text-align: center;
             font-size: 0.9rem;
             color: var(--secondary);
+            font-weight: 400;
         }
 
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 1.5rem;
-            border-radius: 15px;
-            margin: 2rem 0;
-            border: 2px solid #f5c6cb;
-        }
-
-        .error-message h4 {
-            margin-bottom: 1rem;
-        }
-
-        .error-message pre {
-            background: white;
-            padding: 1rem;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-size: 0.85rem;
-            margin-top: 1rem;
+        .loading {
+            text-align: center;
+            padding: 5rem 2rem;
         }
 
         .spinner {
-            width: 40px;
-            height: 40px;
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1.5rem;
             border: 4px solid var(--accent);
             border-top: 4px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            display: inline-block;
-            vertical-align: middle;
-            margin-left: 10px;
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        .slideshow-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(30,20,15,0.98) 100%);
+            z-index: 2000;
+        }
+
+        .slideshow-modal.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slideshow-content {
+            max-width: 85%;
+            max-height: 75vh;
+            position: relative;
+        }
+
+        .slideshow-content img {
+            max-width: 100%;
+            max-height: 75vh;
+            object-fit: contain;
+            border-radius: 15px;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.7);
+        }
+
+        .slideshow-caption {
+            text-align: center;
+            color: white;
+            margin-top: 2rem;
+            font-size: 1.3rem;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        .slideshow-controls {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 2001;
+        }
+
+        .slideshow-btn {
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+        }
+
+        .slideshow-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: scale(1.1);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .slideshow-progress {
+            position: absolute;
+            bottom: 2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 1.1rem;
+            background: rgba(0,0,0,0.6);
+            padding: 0.7rem 2rem;
+            border-radius: 30px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+            z-index: 2001;
+        }
+
+        .nav-arrow:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-50%) scale(1.15);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .nav-arrow.prev {
+            left: 3rem;
+        }
+
+        .nav-arrow.next {
+            right: 3rem;
         }
 
         .lightbox {
@@ -240,297 +378,497 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
+            background: rgba(0, 0, 0, 0.96);
+            z-index: 1500;
+            padding: 2rem;
         }
 
         .lightbox.active {
             display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .lightbox img {
+        .lightbox-content {
             max-width: 90%;
-            max-height: 90vh;
+            max-height: 90%;
+            position: relative;
+        }
+
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 85vh;
+            object-fit: contain;
             border-radius: 15px;
             box-shadow: 0 20px 80px rgba(0,0,0,0.8);
         }
 
         .lightbox-close {
             position: absolute;
-            top: 2rem;
-            right: 2rem;
-            background: rgba(255,255,255,0.2);
+            top: -3.5rem;
+            right: 0;
+            background: none;
             border: none;
             color: white;
             font-size: 3rem;
             cursor: pointer;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             transition: all 0.3s ease;
+            font-weight: 300;
         }
 
         .lightbox-close:hover {
-            background: rgba(255,255,255,0.3);
-            transform: rotate(90deg);
+            transform: rotate(90deg) scale(1.2);
+        }
+
+        .lightbox-caption {
+            text-align: center;
+            color: white;
+            margin-top: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--secondary);
+            font-weight: 300;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 1.5rem;
+            }
+
+            .folder-preview {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+
+            .nav-arrow {
+                width: 45px;
+                height: 45px;
+                font-size: 1.5rem;
+            }
+
+            .nav-arrow.prev {
+                left: 1rem;
+            }
+
+            .nav-arrow.next {
+                right: 1rem;
+            }
         }
     </style>
 </head>
 <body>
     <header>
         <h1>Galeri Kenangan</h1>
-        <p class="subtitle">Debug Mode - Periksa Status di Bawah</p>
+        <p class="subtitle">Setiap momen berharga terabadikan dengan indah</p>
     </header>
 
+    <div class="play-controls">
+        <button class="play-btn" onclick="toggleSlideshow()">
+            <span id="play-icon">▶</span>
+            <span id="play-text">Putar Kenangan</span>
+        </button>
+    </div>
+
     <div class="container">
-        <!-- Config Panel -->
-        <div class="config-panel">
-            <h3>⚙️ Konfigurasi</h3>
-            <div class="input-group">
-                <label>Folder ID Google Drive:</label>
-                <input type="text" id="folder-id" value="1ZqjiL9QGwfu9dpwThdDFyDRRGJh75aNY" placeholder="Contoh: 1abc123xyz...">
-            </div>
-            <div class="input-group">
-                <label>API Key:</label>
-                <input type="text" id="api-key" value="AIzaSyBGHQX0nUKYjATK-eQTlB99OcsgVnL0vHM" placeholder="AIzaSy...">
-            </div>
-            <button class="btn" onclick="startLoad()">🚀 Muat Galeri</button>
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p style="color: var(--secondary); font-size: 1.1rem;">Memuat kenangan indah...</p>
         </div>
 
-        <!-- Status Panel -->
-        <div id="status-panel" class="status" style="display: none;">
-            <h3 style="margin-bottom: 1rem; color: var(--primary);">📊 Status Loading</h3>
-            <div id="status-content"></div>
+        <div id="folders-container"></div>
+    </div>
+
+    <div id="slideshow-modal" class="slideshow-modal">
+        <div class="slideshow-controls">
+            <button class="slideshow-btn" onclick="toggleSlideshowPause()" title="Pause/Play">
+                <span id="pause-icon">⏸</span>
+            </button>
+            <button class="slideshow-btn" onclick="closeSlideshow()" title="Close">
+                ✕
+            </button>
         </div>
-
-        <!-- Error Panel -->
-        <div id="error-panel" style="display: none;"></div>
-
-        <!-- Gallery -->
-        <div id="gallery" class="gallery"></div>
+        
+        <button class="nav-arrow prev" onclick="previousSlide()">‹</button>
+        <button class="nav-arrow next" onclick="nextSlide()">›</button>
+        
+        <div class="slideshow-content" id="slideshow-content">
+            <div id="slideshow-caption" class="slideshow-caption"></div>
+        </div>
+        
+        <div class="slideshow-progress" id="slideshow-progress">1 / 1</div>
     </div>
 
-    <!-- Lightbox -->
-    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
-        <button class="lightbox-close" onclick="closeLightbox()">×</button>
-        <img id="lightbox-img" src="" alt="">
+    <div id="lightbox" class="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+            <div id="lightbox-media">
+                <img id="lightbox-img" src="" alt="">
+            </div>
+            <div id="lightbox-caption" class="lightbox-caption"></div>
+        </div>
     </div>
+
+    <audio id="bg-music" loop>
+        <source src="https://www.bensound.com/bensound-music/bensound-memories.mp3" type="audio/mpeg">
+    </audio>
+
+    <footer>
+        <p>✨ Dibuat dengan cinta untuk mengenang setiap momen berharga ✨</p>
+    </footer>
 
     <script>
-        let FOLDER_ID = '';
-        let API_KEY = '';
-        let statusSteps = [];
+        // ⚠️ GANTI dengan Folder ID dan API Key Anda
+        const FOLDER_ID = '1ZqjiL9QGwfu9dpwThdDFyDRRGJh75aNY';
+        const API_KEY = 'AIzaSyBGHQX0nUKYjATK-eQTlB99OcsgVnL0vHM';
+        
+        let allMedia = [];
+        let folderStates = {};
+        let currentSlideIndex = 0;
+        let slideshowInterval = null;
+        let isPlaying = false;
+        let isPaused = false;
+        const bgMusic = document.getElementById('bg-music');
 
-        function addStatus(step, status, message = '') {
-            statusSteps.push({ step, status, message });
-            updateStatusDisplay();
+        async function getAllSubfolders(folderId) {
+            const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType='application/vnd.google-apps.folder'&fields=files(id,name)&key=${API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            return data.files || [];
         }
 
-        function updateStatusDisplay() {
-            const statusContent = document.getElementById('status-content');
-            statusContent.innerHTML = statusSteps.map(s => `
-                <div class="status-item">
-                    <span>${s.step}</span>
-                    <div>
-                        ${s.message ? `<span style="margin-right: 10px; color: var(--secondary); font-size: 0.85rem;">${s.message}</span>` : ''}
-                        <span class="status-badge ${s.status}">${
-                            s.status === 'loading' ? '⏳ Loading' :
-                            s.status === 'success' ? '✅ Sukses' :
-                            '❌ Gagal'
-                        }</span>
-                    </div>
+        async function getMediaFromFolder(folderId) {
+            const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,mimeType,createdTime,thumbnailLink)&orderBy=createdTime desc&key=${API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            return data.files || [];
+        }
+
+        function getMediaUrl(fileId) {
+            return `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+        }
+
+        async function renderFolder(folderId, folderName, container) {
+            const folderMedia = await getMediaFromFolder(folderId);
+            const previewMedia = folderMedia.slice(0, 6);
+            
+            if (folderMedia.length === 0) return;
+
+            const folderCard = document.createElement('div');
+            folderCard.className = 'folder-card';
+            folderCard.id = `folder-${folderId}`;
+
+            const header = document.createElement('div');
+            header.className = 'folder-header';
+            header.innerHTML = `
+                <div class="folder-title">
+                    📁 ${folderName}
+                    <span class="folder-count">${folderMedia.length} foto</span>
                 </div>
-            `).join('');
-        }
-
-        async function testAPI() {
-            addStatus('1. Test Koneksi API', 'loading');
-            
-            try {
-                const url = `https://www.googleapis.com/drive/v3/files/${FOLDER_ID}?fields=id,name,mimeType&key=${API_KEY}`;
-                console.log('Testing API with URL:', url);
-                
-                const response = await fetch(url);
-                const text = await response.text();
-                
-                console.log('Response status:', response.status);
-                console.log('Response text:', text);
-                
-                if (!response.ok) {
-                    let errorMsg = text;
-                    try {
-                        const errorData = JSON.parse(text);
-                        errorMsg = errorData.error?.message || text;
-                    } catch (e) {}
-                    
-                    throw new Error(errorMsg);
-                }
-                
-                const data = JSON.parse(text);
-                addStatus('1. Test Koneksi API', 'success', `Folder: ${data.name}`);
-                return true;
-            } catch (error) {
-                addStatus('1. Test Koneksi API', 'error', error.message);
-                showError('API Connection Failed', error.message);
-                return false;
-            }
-        }
-
-        async function getFiles() {
-            addStatus('2. Ambil Daftar File', 'loading');
-            
-            try {
-                const url = `https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents&fields=files(id,name,mimeType,thumbnailLink,createdTime)&key=${API_KEY}`;
-                console.log('Getting files with URL:', url);
-                
-                const response = await fetch(url);
-                const text = await response.text();
-                
-                console.log('Files response:', text);
-                
-                if (!response.ok) {
-                    const errorData = JSON.parse(text);
-                    throw new Error(errorData.error?.message || 'Failed to get files');
-                }
-                
-                const data = JSON.parse(text);
-                const imageFiles = data.files.filter(f => f.mimeType && f.mimeType.startsWith('image/'));
-                
-                addStatus('2. Ambil Daftar File', 'success', `${imageFiles.length} foto ditemukan`);
-                return imageFiles;
-            } catch (error) {
-                addStatus('2. Ambil Daftar File', 'error', error.message);
-                showError('Failed to Get Files', error.message);
-                return [];
-            }
-        }
-
-        async function renderGallery(files) {
-            addStatus('3. Render Galeri', 'loading');
-            
-            try {
-                const gallery = document.getElementById('gallery');
-                gallery.innerHTML = '';
-                
-                if (files.length === 0) {
-                    gallery.innerHTML = `
-                        <div style="grid-column: 1/-1; text-align: center; padding: 4rem 2rem; color: var(--secondary);">
-                            <p style="font-size: 3rem; margin-bottom: 1rem;">📷</p>
-                            <h2 style="font-family: 'Playfair Display', serif; margin-bottom: 1rem;">Tidak Ada Foto</h2>
-                            <p>Folder ini tidak berisi foto. Upload foto ke folder Google Drive Anda!</p>
-                        </div>
-                    `;
-                    addStatus('3. Render Galeri', 'success', 'Folder kosong');
-                    return;
-                }
-                
-                files.forEach(file => {
-                    const card = document.createElement('div');
-                    card.className = 'memory-card';
-                    
-                    const photoUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w800`;
-                    
-                    const date = new Date(file.createdTime).toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                    });
-                    
-                    card.innerHTML = `
-                        <div class="photo-frame">
-                            <img src="${photoUrl}" alt="${file.name}" loading="lazy" 
-                                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect fill=%22%23e8d5c4%22 width=%22400%22 height=%22400%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%238b7b6b%22 font-size=%2220%22%3EGambar tidak tersedia%3C/text%3E%3C/svg%3E'">
-                        </div>
-                        <div class="photo-caption">${date}</div>
-                    `;
-                    
-                    card.onclick = () => openLightbox(photoUrl);
-                    gallery.appendChild(card);
-                });
-                
-                addStatus('3. Render Galeri', 'success', `${files.length} foto ditampilkan`);
-            } catch (error) {
-                addStatus('3. Render Galeri', 'error', error.message);
-                showError('Render Failed', error.message);
-            }
-        }
-
-        function showError(title, message) {
-            const errorPanel = document.getElementById('error-panel');
-            errorPanel.style.display = 'block';
-            errorPanel.innerHTML = `
-                <div class="error-message">
-                    <h4>❌ ${title}</h4>
-                    <p>${message}</p>
-                    <h4 style="margin-top: 2rem;">Langkah Perbaikan:</h4>
-                    <ol style="line-height: 2; margin-top: 1rem;">
-                        <li><strong>Cek Folder Sharing:</strong> Buka folder di Google Drive → Klik kanan → Share → "Anyone with the link" → Permission: "Viewer"</li>
-                        <li><strong>Cek API Key:</strong> Buka <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a> → Aktifkan "Google Drive API" → Buat API Key baru</li>
-                        <li><strong>Cek Folder ID:</strong> Copy dari URL Google Drive (bagian setelah /folders/)</li>
-                        <li><strong>Cek Console Browser:</strong> Tekan F12 untuk melihat error detail</li>
-                    </ol>
-                </div>
+                <button class="folder-toggle" onclick="toggleFolder('${folderId}')">
+                    Lihat Semua
+                </button>
             `;
+
+            const preview = document.createElement('div');
+            preview.className = 'folder-preview';
+            
+            previewMedia.forEach(file => {
+                const item = document.createElement('div');
+                item.className = 'preview-item';
+                
+                const img = document.createElement('img');
+                img.src = getMediaUrl(file.id);
+                img.alt = file.name;
+                img.loading = 'lazy';
+                item.appendChild(img);
+                preview.appendChild(item);
+            });
+
+            const content = document.createElement('div');
+            content.className = 'folder-content';
+            content.id = `content-${folderId}`;
+
+            const gallery = document.createElement('div');
+            gallery.className = 'gallery';
+
+            folderMedia.forEach(file => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                
+                const mediaUrl = getMediaUrl(file.id);
+                
+                const date = new Date(file.createdTime).toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+
+                const photoFrame = document.createElement('div');
+                photoFrame.className = 'photo-frame';
+
+                const img = document.createElement('img');
+                img.src = mediaUrl;
+                img.alt = file.name;
+                img.loading = 'lazy';
+                photoFrame.appendChild(img);
+                
+                const caption = document.createElement('div');
+                caption.className = 'photo-caption';
+                caption.textContent = date;
+                
+                card.appendChild(photoFrame);
+                card.appendChild(caption);
+                card.onclick = () => openLightbox(mediaUrl, `${folderName} • ${date}`);
+                gallery.appendChild(card);
+
+                allMedia.push({
+                    url: mediaUrl,
+                    caption: `${folderName} • ${date}`
+                });
+            });
+
+            content.appendChild(gallery);
+
+            folderCard.appendChild(header);
+            folderCard.appendChild(preview);
+            folderCard.appendChild(content);
+            container.appendChild(folderCard);
+
+            folderStates[folderId] = { isOpen: false };
         }
 
-        async function startLoad() {
-            // Reset
-            statusSteps = [];
-            document.getElementById('status-panel').style.display = 'block';
-            document.getElementById('error-panel').style.display = 'none';
-            document.getElementById('gallery').innerHTML = '';
+        function toggleFolder(folderId) {
+            const content = document.getElementById(`content-${folderId}`);
+            const btn = document.querySelector(`#folder-${folderId} .folder-toggle`);
             
-            // Get values
-            FOLDER_ID = document.getElementById('folder-id').value.trim();
-            API_KEY = document.getElementById('api-key').value.trim();
-            
-            console.clear();
-            console.log('='.repeat(50));
-            console.log('🚀 STARTING GALLERY LOAD');
-            console.log('='.repeat(50));
-            console.log('Folder ID:', FOLDER_ID);
-            console.log('API Key:', API_KEY.substring(0, 20) + '...');
-            console.log('='.repeat(50));
-            
-            if (!FOLDER_ID || !API_KEY) {
-                showError('Konfigurasi Tidak Lengkap', 'Mohon isi Folder ID dan API Key terlebih dahulu.');
-                return;
+            if (folderStates[folderId].isOpen) {
+                content.classList.remove('open');
+                btn.textContent = 'Lihat Semua';
+                folderStates[folderId].isOpen = false;
+            } else {
+                content.classList.add('open');
+                btn.textContent = 'Tutup';
+                folderStates[folderId].isOpen = true;
             }
-            
-            // Step 1: Test API
-            const apiOk = await testAPI();
-            if (!apiOk) return;
-            
-            // Step 2: Get Files
-            const files = await getFiles();
-            if (files.length === 0 && statusSteps[statusSteps.length - 1].status === 'error') return;
-            
-            // Step 3: Render
-            await renderGallery(files);
-            
-            console.log('='.repeat(50));
-            console.log('✅ GALLERY LOAD COMPLETE');
-            console.log('='.repeat(50));
         }
 
-        function openLightbox(url) {
-            document.getElementById('lightbox-img').src = url;
-            document.getElementById('lightbox').classList.add('active');
+        async function loadGallery() {
+            const loading = document.getElementById('loading');
+            const container = document.getElementById('folders-container');
+
+            try {
+                const mainMedia = await getMediaFromFolder(FOLDER_ID);
+                
+                if (mainMedia.length > 0) {
+                    await renderFolder(FOLDER_ID, 'Album Utama', container);
+                }
+
+                const subfolders = await getAllSubfolders(FOLDER_ID);
+                
+                for (const folder of subfolders) {
+                    await renderFolder(folder.id, folder.name, container);
+                }
+
+                loading.style.display = 'none';
+                
+                if (allMedia.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 4rem 2rem; color: var(--secondary);">
+                            <p style="font-size: 2rem; margin-bottom: 1rem;">📷</p>
+                            <h2 style="font-family: 'Playfair Display', serif; margin-bottom: 1rem;">Belum Ada Foto</h2>
+                            <p>Upload foto ke Google Drive folder untuk memulai galeri Anda!</p>
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                loading.innerHTML = `
+                    <div style="color: #c06c84; text-align: center;">
+                        <p style="font-size: 2rem;">⚠️</p>
+                        <h3 style="margin-bottom: 1rem;">Gagal Memuat Galeri</h3>
+                        <p>${error.message}</p>
+                        <button onclick="location.reload()" style="
+                            background: var(--primary);
+                            color: white;
+                            border: none;
+                            padding: 0.8rem 2rem;
+                            border-radius: 30px;
+                            cursor: pointer;
+                            margin-top: 1rem;
+                        ">Coba Lagi</button>
+                    </div>
+                `;
+            }
+        }
+
+        function openLightbox(mediaUrl, caption) {
+            const lightbox = document.getElementById('lightbox');
+            const img = document.getElementById('lightbox-img');
+            const captionEl = document.getElementById('lightbox-caption');
+            
+            img.src = mediaUrl;
+            captionEl.textContent = caption;
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
 
         function closeLightbox() {
-            document.getElementById('lightbox').classList.remove('active');
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+            document.body.style.overflow = 'auto';
         }
 
-        // Auto-load on page load
-        window.onload = () => {
-            console.log('Page loaded. Klik tombol "Muat Galeri" atau edit konfigurasi terlebih dahulu.');
-        };
+        function toggleSlideshow() {
+            if (allMedia.length === 0) {
+                alert('Belum ada foto!');
+                return;
+            }
+
+            if (isPlaying) {
+                closeSlideshow();
+            } else {
+                startSlideshow();
+            }
+        }
+
+        function startSlideshow() {
+            currentSlideIndex = 0;
+            isPlaying = true;
+            isPaused = false;
+            
+            document.getElementById('slideshow-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            const playBtn = document.querySelector('.play-btn');
+            playBtn.classList.add('playing');
+            document.getElementById('play-icon').textContent = '⏹';
+            document.getElementById('play-text').textContent = 'Stop Kenangan';
+            
+            bgMusic.volume = 0.5;
+            bgMusic.play().catch(e => console.log('Autoplay blocked'));
+            
+            showSlide(currentSlideIndex);
+            startAutoSlide();
+        }
+
+        function closeSlideshow() {
+            isPlaying = false;
+            isPaused = false;
+            
+            document.getElementById('slideshow-modal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            const playBtn = document.querySelector('.play-btn');
+            playBtn.classList.remove('playing');
+            document.getElementById('play-icon').textContent = '▶';
+            document.getElementById('play-text').textContent = 'Putar Kenangan';
+            
+            if (slideshowInterval) {
+                clearInterval(slideshowInterval);
+                slideshowInterval = null;
+            }
+            
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        }
+
+        function toggleSlideshowPause() {
+            isPaused = !isPaused;
+            const pauseIcon = document.getElementById('pause-icon');
+            
+            if (isPaused) {
+                pauseIcon.textContent = '▶';
+                if (slideshowInterval) {
+                    clearInterval(slideshowInterval);
+                    slideshowInterval = null;
+                }
+                bgMusic.pause();
+            } else {
+                pauseIcon.textContent = '⏸';
+                startAutoSlide();
+                bgMusic.play();
+            }
+        }
+
+        function showSlide(index) {
+            if (index < 0) index = allMedia.length - 1;
+            if (index >= allMedia.length) index = 0;
+            
+            currentSlideIndex = index;
+            const media = allMedia[index];
+            const content = document.getElementById('slideshow-content');
+            const caption = document.getElementById('slideshow-caption');
+            const progress = document.getElementById('slideshow-progress');
+            
+            const existing = content.querySelector('img');
+            if (existing) existing.remove();
+            
+            const img = document.createElement('img');
+            img.src = media.url;
+            img.alt = media.caption;
+            content.insertBefore(img, caption);
+            
+            caption.textContent = media.caption;
+            progress.textContent = `${index + 1} / ${allMedia.length}`;
+        }
+
+        function nextSlide() {
+            showSlide(currentSlideIndex + 1);
+            if (!isPaused) resetAutoSlide();
+        }
+
+        function previousSlide() {
+            showSlide(currentSlideIndex - 1);
+            if (!isPaused) resetAutoSlide();
+        }
+
+        function startAutoSlide() {
+            if (slideshowInterval) clearInterval(slideshowInterval);
+            slideshowInterval = setInterval(() => {
+                nextSlide();
+            }, 5000);
+        }
+
+        function resetAutoSlide() {
+            if (slideshowInterval) clearInterval(slideshowInterval);
+            startAutoSlide();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (isPlaying) {
+                    closeSlideshow();
+                } else {
+                    closeLightbox();
+                }
+            }
+            
+            if (isPlaying) {
+                if (e.key === 'ArrowRight') nextSlide();
+                if (e.key === 'ArrowLeft') previousSlide();
+                if (e.key === ' ') {
+                    e.preventDefault();
+                    toggleSlideshowPause();
+                }
+            }
+        });
+
+        document.getElementById('lightbox').addEventListener('click', (e) => {
+            if (e.target.id === 'lightbox') closeLightbox();
+        });
+
+        document.getElementById('slideshow-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'slideshow-modal') closeSlideshow();
+        });
+
+        loadGallery();
     </script>
 </body>
 </html>
