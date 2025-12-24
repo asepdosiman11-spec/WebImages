@@ -165,6 +165,12 @@
             height: 100%;
             object-fit: cover;
             transition: transform 0.3s ease;
+            background: #f5f5f5;
+        }
+
+        .photo-frame img[src=""],
+        .photo-frame img:not([src]) {
+            display: none;
         }
 
         .memory-card:hover .photo-frame img {
@@ -439,21 +445,48 @@
                     card.className = 'memory-card';
                     card.style.animationDelay = `${index * 0.1}s`;
                     
-                    const imageUrl = `https://drive.google.com/uc?export=view&id=${file.id}`;
+                    // Gunakan thumbnail API yang lebih reliable
+                    const imageUrl = `https://lh3.googleusercontent.com/d/${file.id}`;
+                    const thumbnailUrl = file.thumbnailLink || imageUrl;
+                    
                     const date = new Date(file.createdTime).toLocaleDateString('id-ID', {
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric'
                     });
 
-                    card.innerHTML = `
-                        <div class="polaroid">
-                            <div class="photo-frame">
-                                <img src="${imageUrl}" alt="${file.name}" loading="lazy">
-                            </div>
-                            <div class="photo-caption">${date}</div>
-                        </div>
-                    `;
+                    const polaroid = document.createElement('div');
+                    polaroid.className = 'polaroid';
+                    
+                    const photoFrame = document.createElement('div');
+                    photoFrame.className = 'photo-frame';
+                    
+                    const img = document.createElement('img');
+                    img.alt = file.name;
+                    img.loading = 'lazy';
+                    
+                    // Coba load gambar dengan error handling
+                    img.onerror = function() {
+                        // Jika gagal, coba URL alternatif
+                        if (this.src !== imageUrl) {
+                            this.src = imageUrl;
+                        } else {
+                            // Jika masih gagal, tampilkan placeholder
+                            this.style.display = 'none';
+                            photoFrame.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-size:3rem;">📷</div>';
+                        }
+                    };
+                    
+                    img.src = thumbnailUrl;
+                    photoFrame.appendChild(img);
+                    
+                    const caption = document.createElement('div');
+                    caption.className = 'photo-caption';
+                    caption.textContent = date;
+                    
+                    polaroid.appendChild(photoFrame);
+                    polaroid.appendChild(caption);
+                    card.appendChild(polaroid);
 
                     card.onclick = () => openLightbox(imageUrl, date);
                     gallery.appendChild(card);
