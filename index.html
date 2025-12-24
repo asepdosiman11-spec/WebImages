@@ -54,7 +54,7 @@
         header {
             position: relative;
             text-align: center;
-            padding: 4rem 2rem 3rem;
+            padding: 4rem 2rem 2rem;
             background: linear-gradient(180deg, rgba(139, 115, 85, 0.1) 0%, transparent 100%);
         }
 
@@ -78,13 +78,95 @@
             opacity: 0.8;
         }
 
-        /* Polaroid Style Container */
+        /* Play Button */
+        .play-controls {
+            text-align: center;
+            padding: 1rem 2rem 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .play-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(139, 115, 85, 0.3);
+            transition: all 0.3s ease;
+            font-family: 'Georgia', serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 115, 85, 0.4);
+        }
+
+        .play-btn:active {
+            transform: translateY(0);
+        }
+
+        .play-btn.playing {
+            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+        }
+
+        /* Container */
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
             position: relative;
             z-index: 1;
+        }
+
+        /* Folder Section */
+        .folder-section {
+            margin-bottom: 4rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .folder-header {
+            background: white;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .folder-header h2 {
+            color: var(--dark);
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .folder-count {
+            background: var(--accent);
+            color: var(--dark);
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: normal;
         }
 
         /* Masonry Grid */
@@ -112,18 +194,6 @@
             margin-bottom: 2rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .polaroid {
@@ -133,6 +203,7 @@
             transform: rotate(0deg);
             transition: all 0.3s ease;
             border-radius: 3px;
+            position: relative;
         }
 
         .memory-card:nth-child(3n+1) .polaroid {
@@ -160,7 +231,8 @@
             aspect-ratio: 1;
         }
 
-        .photo-frame img {
+        .photo-frame img,
+        .photo-frame video {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -168,13 +240,22 @@
             background: #f5f5f5;
         }
 
-        .photo-frame img[src=""],
-        .photo-frame img:not([src]) {
-            display: none;
+        .memory-card:hover .photo-frame img,
+        .memory-card:hover .photo-frame video {
+            transform: scale(1.1);
         }
 
-        .memory-card:hover .photo-frame img {
-            transform: scale(1.1);
+        .video-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            pointer-events: none;
+            z-index: 1;
         }
 
         .photo-caption {
@@ -207,6 +288,131 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Slideshow Modal */
+        .slideshow-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.98);
+            z-index: 2000;
+            animation: fadeInLightbox 0.3s ease;
+        }
+
+        @keyframes fadeInLightbox {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .slideshow-modal.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slideshow-content {
+            max-width: 90%;
+            max-height: 80vh;
+            position: relative;
+        }
+
+        .slideshow-content img,
+        .slideshow-content video {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            border-radius: 8px;
+        }
+
+        .slideshow-caption {
+            text-align: center;
+            color: white;
+            margin-top: 1.5rem;
+            font-size: 1.5rem;
+            font-style: italic;
+        }
+
+        .slideshow-controls {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 2001;
+        }
+
+        .slideshow-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .slideshow-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .slideshow-progress {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 1.2rem;
+            background: rgba(0,0,0,0.5);
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Navigation Arrows */
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 2001;
+        }
+
+        .nav-arrow:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-arrow.prev {
+            left: 2rem;
+        }
+
+        .nav-arrow.next {
+            right: 2rem;
+        }
+
         /* Lightbox */
         .lightbox {
             display: none;
@@ -219,11 +425,6 @@
             z-index: 1000;
             padding: 2rem;
             animation: fadeInLightbox 0.3s ease;
-        }
-
-        @keyframes fadeInLightbox {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
 
         .lightbox.active {
@@ -250,7 +451,8 @@
             }
         }
 
-        .lightbox-content img {
+        .lightbox-content img,
+        .lightbox-content video {
             max-width: 100%;
             max-height: 85vh;
             object-fit: contain;
@@ -336,6 +538,33 @@
             font-style: italic;
             opacity: 0.7;
         }
+
+        @media (max-width: 768px) {
+            .nav-arrow {
+                width: 45px;
+                height: 45px;
+                font-size: 1.5rem;
+            }
+            
+            .nav-arrow.prev {
+                left: 1rem;
+            }
+            
+            .nav-arrow.next {
+                right: 1rem;
+            }
+
+            .slideshow-controls {
+                top: 1rem;
+                right: 1rem;
+            }
+
+            .slideshow-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -355,6 +584,14 @@
         </div>
     </header>
 
+    <!-- Play Controls -->
+    <div class="play-controls">
+        <button class="play-btn" onclick="toggleSlideshow()">
+            <span id="play-icon">▶</span>
+            <span id="play-text">Putar Kenangan</span>
+        </button>
+    </div>
+
     <!-- Main Container -->
     <div class="container">
         <!-- Loading State -->
@@ -363,8 +600,8 @@
             <p style="color: var(--primary); font-size: 1.2rem;">Memuat kenangan indah...</p>
         </div>
 
-        <!-- Gallery -->
-        <div id="gallery" class="gallery"></div>
+        <!-- Gallery Container -->
+        <div id="gallery-container"></div>
 
         <!-- Empty State -->
         <div id="empty" class="empty-state" style="display: none;">
@@ -372,7 +609,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
             </svg>
             <h2>Belum Ada Kenangan</h2>
-            <p>Upload foto pertama Anda ke Google Drive untuk memulai!</p>
+            <p>Upload foto atau video pertama Anda ke Google Drive untuk memulai!</p>
         </div>
 
         <!-- Instructions -->
@@ -380,23 +617,50 @@
             <h2>📋 Cara Menggunakan</h2>
             <ol>
                 <li>Buka Google Drive dan buat folder khusus untuk galeri kenangan Anda</li>
-                <li>Klik kanan folder → Bagikan → Ubah ke "Siapa saja yang memiliki link dapat melihat"</li>
+                <li>Buat subfolder untuk mengorganisir foto/video (misal: "Liburan 2024", "Ulang Tahun", dll)</li>
+                <li>Klik kanan folder utama → Bagikan → Ubah ke "Siapa saja yang memiliki link dapat melihat"</li>
                 <li>Salin ID folder dari URL (contoh: <code>1a2B3c4D5e6F7g8H9i0J</code>)</li>
-                <li>Buka file HTML ini dengan text editor, cari <code>YOUR_FOLDER_ID_HERE</code></li>
-                <li>Ganti dengan ID folder Anda, lalu save</li>
+                <li>Ganti <code>FOLDER_ID</code> dan <code>API_KEY</code> di kode JavaScript</li>
                 <li>Upload file HTML ini ke hosting gratis seperti Netlify, Vercel, atau GitHub Pages</li>
+                <li>Klik tombol "Putar Kenangan" untuk menikmati slideshow otomatis dengan musik! 🎵</li>
             </ol>
         </div>
+    </div>
+
+    <!-- Slideshow Modal -->
+    <div id="slideshow-modal" class="slideshow-modal">
+        <div class="slideshow-controls">
+            <button class="slideshow-btn" onclick="toggleSlideshowPause()" title="Pause/Play">
+                <span id="pause-icon">⏸</span>
+            </button>
+            <button class="slideshow-btn" onclick="closeSlideshow()" title="Close">
+                ✕
+            </button>
+        </div>
+        
+        <button class="nav-arrow prev" onclick="previousSlide()">‹</button>
+        <button class="nav-arrow next" onclick="nextSlide()">›</button>
+        
+        <div class="slideshow-content" id="slideshow-content">
+            <div id="slideshow-caption" class="slideshow-caption"></div>
+        </div>
+        
+        <div class="slideshow-progress" id="slideshow-progress">1 / 1</div>
     </div>
 
     <!-- Lightbox -->
     <div id="lightbox" class="lightbox">
         <div class="lightbox-content">
             <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
-            <img id="lightbox-img" src="" alt="">
+            <div id="lightbox-media"></div>
             <div id="lightbox-caption" class="lightbox-caption"></div>
         </div>
     </div>
+
+    <!-- Background Music -->
+    <audio id="bg-music" loop>
+        <source src="https://cdn.pixabay.com/audio/2022/03/10/audio_4e3f47c968.mp3" type="audio/mpeg">
+    </audio>
 
     <!-- Footer -->
     <footer>
@@ -405,15 +669,24 @@
 
     <script>
         // ========================================
-        // KONFIGURASI - SUDAH DIATUR
+        // KONFIGURASI - GANTI INI
         // ========================================
         const FOLDER_ID = '1ZqjiL9QGwfu9dpwThdDFyDRRGJh75aNY';
         const API_KEY = 'AIzaSyBGHQX0nUKYjATK-eQTlB99OcsgVnL0vHM';
         
         // ========================================
-        // JANGAN EDIT DI BAWAH INI
+        // GLOBAL VARIABLES
         // ========================================
+        let allMedia = [];
+        let currentSlideIndex = 0;
+        let slideshowInterval = null;
+        let isPlaying = false;
+        let isPaused = false;
+        const bgMusic = document.getElementById('bg-music');
 
+        // ========================================
+        // API FUNCTIONS
+        // ========================================
         async function getAllSubfolders(folderId) {
             const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType='application/vnd.google-apps.folder'&fields=files(id,name)&key=${API_KEY}`;
             const response = await fetch(url);
@@ -421,106 +694,160 @@
             return data.files || [];
         }
 
-        async function getImagesFromFolder(folderId) {
-            const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,mimeType,createdTime,thumbnailLink,parents)&orderBy=createdTime desc&key=${API_KEY}`;
+        async function getMediaFromFolder(folderId) {
+            const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+(mimeType+contains+'image/'+or+mimeType+contains+'video/')&fields=files(id,name,mimeType,createdTime,thumbnailLink)&orderBy=createdTime desc&key=${API_KEY}`;
             const response = await fetch(url);
             const data = await response.json();
             return data.files || [];
         }
 
-        async function getAllImagesRecursive(folderId, folderName = '') {
-            let allImages = [];
+        async function getAllMediaByFolder(folderId, folderName = 'Album Utama') {
+            let folderData = {
+                name: folderName,
+                media: []
+            };
             
-            // Ambil gambar dari folder ini
-            const images = await getImagesFromFolder(folderId);
-            images.forEach(img => {
-                img.folderName = folderName;
-            });
-            allImages = allImages.concat(images);
+            const media = await getMediaFromFolder(folderId);
+            folderData.media = media;
             
-            // Ambil semua subfolder
             const subfolders = await getAllSubfolders(folderId);
+            let allFolders = [folderData];
             
-            // Rekursif untuk setiap subfolder
             for (const subfolder of subfolders) {
-                const subImages = await getAllImagesRecursive(subfolder.id, subfolder.name);
-                allImages = allImages.concat(subImages);
+                const subFolderData = await getAllMediaByFolder(subfolder.id, subfolder.name);
+                allFolders = allFolders.concat(subFolderData);
             }
             
-            return allImages;
+            return allFolders;
         }
 
-        async function loadGallery() {
-            const loading = document.getElementById('loading');
-            const gallery = document.getElementById('gallery');
-            const empty = document.getElementById('empty');
+        // ========================================
+        // RENDER FUNCTIONS
+        // ========================================
+        function isVideo(mimeType) {
+            return mimeType && mimeType.startsWith('video/');
+        }
 
-            try {
-                // Ambil semua gambar termasuk dari subfolder
-                const files = await getAllImagesRecursive(FOLDER_ID, 'Album Utama');
+        function getMediaUrl(fileId, mimeType) {
+            if (isVideo(mimeType)) {
+                return `https://drive.google.com/file/d/${fileId}/preview`;
+            }
+            return `https://lh3.googleusercontent.com/d/${fileId}`;
+        }
+
+        function renderFolder(folderData, container) {
+            if (folderData.media.length === 0) return;
+
+            const section = document.createElement('div');
+            section.className = 'folder-section';
+
+            const header = document.createElement('div');
+            header.className = 'folder-header';
+            header.innerHTML = `
+                <h2>
+                    📁 ${folderData.name}
+                    <span class="folder-count">${folderData.media.length} item</span>
+                </h2>
+            `;
+            section.appendChild(header);
+
+            const gallery = document.createElement('div');
+            gallery.className = 'gallery';
+
+            folderData.media.forEach((file, index) => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.style.animationDelay = `${index * 0.05}s`;
                 
-                // Urutkan berdasarkan tanggal terbaru
-                files.sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
+                const mediaUrl = getMediaUrl(file.id, file.mimeType);
+                const isVid = isVideo(file.mimeType);
+                
+                const date = new Date(file.createdTime).toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
 
-                loading.style.display = 'none';
-
-                if (files.length === 0) {
-                    empty.style.display = 'block';
-                    return;
-                }
-
-                // Render images
-                files.forEach((file, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'memory-card';
-                    card.style.animationDelay = `${index * 0.1}s`;
+                const polaroid = document.createElement('div');
+                polaroid.className = 'polaroid';
+                
+                const photoFrame = document.createElement('div');
+                photoFrame.className = 'photo-frame';
+                
+                if (isVid) {
+                    const videoIndicator = document.createElement('div');
+                    videoIndicator.className = 'video-indicator';
+                    videoIndicator.textContent = '▶';
+                    photoFrame.appendChild(videoIndicator);
                     
-                    // Gunakan thumbnail API yang lebih reliable
-                    const imageUrl = `https://lh3.googleusercontent.com/d/${file.id}`;
-                    const thumbnailUrl = file.thumbnailLink || imageUrl;
-                    
-                    const date = new Date(file.createdTime).toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                    });
-
-                    const polaroid = document.createElement('div');
-                    polaroid.className = 'polaroid';
-                    
-                    const photoFrame = document.createElement('div');
-                    photoFrame.className = 'photo-frame';
-                    
+                    const video = document.createElement('video');
+                    video.src = mediaUrl;
+                    video.muted = true;
+                    video.preload = 'metadata';
+                    photoFrame.appendChild(video);
+                } else {
                     const img = document.createElement('img');
+                    img.src = file.thumbnailLink || mediaUrl;
                     img.alt = file.name;
                     img.loading = 'lazy';
                     
-                    // Coba load gambar dengan error handling
                     img.onerror = function() {
-                        // Jika gagal, coba URL alternatif
-                        if (this.src !== imageUrl) {
-                            this.src = imageUrl;
+                        if (this.src !== mediaUrl) {
+                            this.src = mediaUrl;
                         } else {
-                            // Jika masih gagal, tampilkan placeholder
                             this.style.display = 'none';
                             photoFrame.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-size:3rem;">📷</div>';
                         }
                     };
                     
-                    img.src = thumbnailUrl;
                     photoFrame.appendChild(img);
-                    
-                    const caption = document.createElement('div');
-                    caption.className = 'photo-caption';
-                    // Tampilkan nama folder jika ada
-                    caption.textContent = file.folderName ? `${file.folderName} • ${date}` : date;
-                    
-                    polaroid.appendChild(photoFrame);
-                    polaroid.appendChild(caption);
-                    card.appendChild(polaroid);
+                }
+                
+                const caption = document.createElement('div');
+                caption.className = 'photo-caption';
+                caption.textContent = date;
+                
+                polaroid.appendChild(photoFrame);
+                polaroid.appendChild(caption);
+                card.appendChild(polaroid);
 
-                    card.onclick = () => openLightbox(imageUrl, file.folderName ? `${file.folderName} • ${date}` : date);
-                    gallery.appendChild(card);
+                card.onclick = () => openLightbox(mediaUrl, `${folderData.name} • ${date}`, isVid);
+                gallery.appendChild(card);
+
+                allMedia.push({
+                    url: mediaUrl,
+                    caption: `${folderData.name} • ${date}`,
+                    isVideo: isVid
+                });
+            });
+
+            section.appendChild(gallery);
+            container.appendChild(section);
+        }
+
+        async function loadGallery() {
+            const loading = document.getElementById('loading');
+            const container = document.getElementById('gallery-container');
+            const empty = document.getElementById('empty');
+
+            try {
+                const folders = await getAllMediaByFolder(FOLDER_ID);
+                
+                folders.forEach(folder => {
+                    folder.media.sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
+                });
+
+                loading.style.display = 'none';
+
+                const totalMedia = folders.reduce((sum, folder) => sum + folder.media.length, 0);
+                
+                if (totalMedia === 0) {
+                    empty.style.display = 'block';
+                    return;
+                }
+
+                folders.forEach(folder => {
+                    renderFolder(folder, container);
                 });
 
             } catch (error) {
@@ -537,12 +864,29 @@
             }
         }
 
-        function openLightbox(imageUrl, caption) {
+        // ========================================
+        // LIGHTBOX FUNCTIONS
+        // ========================================
+        function openLightbox(mediaUrl, caption, isVid) {
             const lightbox = document.getElementById('lightbox');
-            const img = document.getElementById('lightbox-img');
+            const mediaContainer = document.getElementById('lightbox-media');
             const captionEl = document.getElementById('lightbox-caption');
             
-            img.src = imageUrl;
+            mediaContainer.innerHTML = '';
+            
+            if (isVid) {
+                const video = document.createElement('video');
+                video.src = mediaUrl;
+                video.controls = true;
+                video.autoplay = true;
+                mediaContainer.appendChild(video);
+            } else {
+                const img = document.createElement('img');
+                img.src = mediaUrl;
+                img.alt = caption;
+                mediaContainer.appendChild(img);
+            }
+            
             captionEl.textContent = caption;
             lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -550,25 +894,204 @@
 
         function closeLightbox() {
             const lightbox = document.getElementById('lightbox');
+            const mediaContainer = document.getElementById('lightbox-media');
+            
+            const video = mediaContainer.querySelector('video');
+            if (video) {
+                video.pause();
+                video.src = '';
+            }
+            
             lightbox.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
 
-        // Close lightbox with ESC key
+        // ========================================
+        // SLIDESHOW FUNCTIONS
+        // ========================================
+        function toggleSlideshow() {
+            if (allMedia.length === 0) {
+                alert('Belum ada foto atau video untuk ditampilkan!');
+                return;
+            }
+
+            if (isPlaying) {
+                closeSlideshow();
+            } else {
+                startSlideshow();
+            }
+        }
+
+        function startSlideshow() {
+            currentSlideIndex = 0;
+            isPlaying = true;
+            isPaused = false;
+            
+            const modal = document.getElementById('slideshow-modal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            const playBtn = document.querySelector('.play-btn');
+            playBtn.classList.add('playing');
+            document.getElementById('play-icon').textContent = '⏹';
+            document.getElementById('play-text').textContent = 'Stop Kenangan';
+            
+            bgMusic.play().catch(e => console.log('Autoplay musik diblokir browser'));
+            
+            showSlide(currentSlideIndex);
+            startAutoSlide();
+        }
+
+        function closeSlideshow() {
+            isPlaying = false;
+            isPaused = false;
+            
+            const modal = document.getElementById('slideshow-modal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            const playBtn = document.querySelector('.play-btn');
+            playBtn.classList.remove('playing');
+            document.getElementById('play-icon').textContent = '▶';
+            document.getElementById('play-text').textContent = 'Putar Kenangan';
+            
+            if (slideshowInterval) {
+                clearInterval(slideshowInterval);
+                slideshowInterval = null;
+            }
+            
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+            
+            const video = document.querySelector('#slideshow-content video');
+            if (video) {
+                video.pause();
+                video.currentTime = 0;
+            }
+        }
+
+        function toggleSlideshowPause() {
+            isPaused = !isPaused;
+            const pauseIcon = document.getElementById('pause-icon');
+            
+            if (isPaused) {
+                pauseIcon.textContent = '▶';
+                if (slideshowInterval) {
+                    clearInterval(slideshowInterval);
+                    slideshowInterval = null;
+                }
+                bgMusic.pause();
+            } else {
+                pauseIcon.textContent = '⏸';
+                startAutoSlide();
+                bgMusic.play();
+            }
+        }
+
+        function showSlide(index) {
+            if (index < 0) index = allMedia.length - 1;
+            if (index >= allMedia.length) index = 0;
+            
+            currentSlideIndex = index;
+            const media = allMedia[index];
+            const content = document.getElementById('slideshow-content');
+            const caption = document.getElementById('slideshow-caption');
+            const progress = document.getElementById('slideshow-progress');
+            
+            const existingVideo = content.querySelector('video');
+            if (existingVideo) {
+                existingVideo.pause();
+                existingVideo.remove();
+            }
+            
+            const existingImg = content.querySelector('img');
+            if (existingImg) {
+                existingImg.remove();
+            }
+            
+            if (media.isVideo) {
+                const video = document.createElement('video');
+                video.src = media.url;
+                video.controls = true;
+                video.autoplay = true;
+                video.style.maxWidth = '100%';
+                video.style.maxHeight = '80vh';
+                content.insertBefore(video, caption);
+            } else {
+                const img = document.createElement('img');
+                img.src = media.url;
+                img.alt = media.caption;
+                content.insertBefore(img, caption);
+            }
+            
+            caption.textContent = media.caption;
+            progress.textContent = `${index + 1} / ${allMedia.length}`;
+        }
+
+        function nextSlide() {
+            showSlide(currentSlideIndex + 1);
+            if (!isPaused) {
+                resetAutoSlide();
+            }
+        }
+
+        function previousSlide() {
+            showSlide(currentSlideIndex - 1);
+            if (!isPaused) {
+                resetAutoSlide();
+            }
+        }
+
+        function startAutoSlide() {
+            if (slideshowInterval) {
+                clearInterval(slideshowInterval);
+            }
+            slideshowInterval = setInterval(() => {
+                nextSlide();
+            }, 5000);
+        }
+
+        function resetAutoSlide() {
+            if (slideshowInterval) {
+                clearInterval(slideshowInterval);
+            }
+            startAutoSlide();
+        }
+
+        // ========================================
+        // EVENT LISTENERS
+        // ========================================
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'Escape') {
+                if (isPlaying) {
+                    closeSlideshow();
+                } else {
+                    closeLightbox();
+                }
+            }
+            
+            if (isPlaying) {
+                if (e.key === 'ArrowRight') nextSlide();
+                if (e.key === 'ArrowLeft') previousSlide();
+                if (e.key === ' ') {
+                    e.preventDefault();
+                    toggleSlideshowPause();
+                }
+            }
         });
 
-        // Close lightbox when clicking outside image
         document.getElementById('lightbox').addEventListener('click', (e) => {
             if (e.target.id === 'lightbox') closeLightbox();
         });
 
-        // Load gallery on page load
-        loadGallery();
+        document.getElementById('slideshow-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'slideshow-modal') closeSlideshow();
+        });
 
-        // Optional: Auto refresh every 5 minutes
-        setInterval(loadGallery, 300000);
+        // ========================================
+        // INITIALIZE
+        // ========================================
+        loadGallery();
     </script>
 </body>
 </html>
