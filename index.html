@@ -466,6 +466,28 @@
             font-weight: 300;
         }
 
+        .debug-info {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 2rem auto;
+            max-width: 800px;
+            box-shadow: 0 4px 15px var(--shadow);
+        }
+
+        .debug-info h4 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .debug-info pre {
+            background: #f5f5f5;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+
         footer {
             text-align: center;
             padding: 3rem 2rem;
@@ -559,6 +581,7 @@
     </footer>
 
     <script>
+        // ⚠️ PENTING: Ganti dengan data Anda
         const FOLDER_ID = '1ZqjiL9QGwfu9dpwThdDFyDRRGJh75aNY';
         const API_KEY = 'AIzaSyBGHQX0nUKYjATK-eQTlB99OcsgVnL0vHM';
         
@@ -570,21 +593,89 @@
         let isPaused = false;
         const bgMusic = document.getElementById('bg-music');
 
+        // Fungsi untuk test koneksi API
+        async function testAPIConnection() {
+            console.log('🔍 Testing API connection...');
+            console.log('Folder ID:', FOLDER_ID);
+            console.log('API Key:', API_KEY.substring(0, 10) + '...');
+            
+            try {
+                // Test 1: Cek apakah folder bisa diakses
+                const testUrl = `https://www.googleapis.com/drive/v3/files/${FOLDER_ID}?fields=id,name,mimeType&key=${API_KEY}`;
+                console.log('Test URL:', testUrl);
+                
+                const response = await fetch(testUrl);
+                const responseText = await response.text();
+                
+                console.log('Response status:', response.status);
+                console.log('Response:', responseText);
+                
+                if (!response.ok) {
+                    let errorData;
+                    try {
+                        errorData = JSON.parse(responseText);
+                    } catch (e) {
+                        throw new Error(`HTTP ${response.status}: ${responseText}`);
+                    }
+                    throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+                }
+                
+                const data = JSON.parse(responseText);
+                console.log('✅ Folder ditemukan:', data.name);
+                return { success: true, data };
+                
+            } catch (error) {
+                console.error('❌ API Test failed:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
         async function getAllSubfolders(folderId) {
-            const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType='application/vnd.google-apps.folder'&fields=files(id,name)&key=${API_KEY}`;
-            const response = await fetch(url);
-            const data = await response.json();
-            return data.files || [];
+            try {
+                const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType='application/vnd.google-apps.folder'&fields=files(id,name)&key=${API_KEY}`;
+                console.log('Getting subfolders from:', url);
+                
+                const response = await fetch(url);
+                const responseText = await response.text();
+                
+                if (!response.ok) {
+                    const errorData = JSON.parse(responseText);
+                    throw new Error(`Subfolder API Error: ${errorData.error?.message || 'Unknown error'}`);
+                }
+                
+                const data = JSON.parse(responseText);
+                console.log('Subfolders found:', data.files?.length || 0);
+                return data.files || [];
+            } catch (error) {
+                console.error('Error getting subfolders:', error);
+                throw error;
+            }
         }
 
         async function getMediaFromFolder(folderId, limit = null) {
-            let url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+(mimeType+contains+'image/'+or+mimeType+contains+'video/')&fields=files(id,name,mimeType,createdTime,thumbnailLink)&orderBy=createdTime desc&key=${API_KEY}`;
-            if (limit) {
-                url += `&pageSize=${limit}`;
+            try {
+                let url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+(mimeType+contains+'image/'+or+mimeType+contains+'video/')&fields=files(id,name,mimeType,createdTime,thumbnailLink,webContentLink)&orderBy=createdTime desc&key=${API_KEY}`;
+                if (limit) {
+                    url += `&pageSize=${limit}`;
+                }
+                
+                console.log('Getting media from folder:', folderId);
+                
+                const response = await fetch(url);
+                const responseText = await response.text();
+                
+                if (!response.ok) {
+                    const errorData = JSON.parse(responseText);
+                    throw new Error(`Media API Error: ${errorData.error?.message || 'Unknown error'}`);
+                }
+                
+                const data = JSON.parse(responseText);
+                console.log('Media found:', data.files?.length || 0);
+                return data.files || [];
+            } catch (error) {
+                console.error('Error getting media:', error);
+                throw error;
             }
-            const response = await fetch(url);
-            const data = await response.json();
-            return data.files || [];
         }
 
         function isVideo(mimeType) {
@@ -592,7 +683,7 @@
         }
 
         function getMediaUrl(fileId) {
-            return `https://lh3.googleusercontent.com/d/${fileId}=s800`;
+            return `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
         }
 
         function getVideoUrl(fileId) {
@@ -603,7 +694,12 @@
             const folderMedia = await getMediaFromFolder(folderId);
             const previewMedia = folderMedia.slice(0, 6);
             
-            if (folderMedia.length === 0) return;
+            console.log(`Rendering folder "${folderName}" with ${folderMedia.length} items`);
+            
+            if (folderMedia.length === 0) {
+                console.log(`Folder "${folderName}" is empty, skipping...`);
+                return;
+            }
 
             const folderCard = document.createElement('div');
             folderCard.className = 'folder-card';
@@ -635,18 +731,13 @@
                     badge.className = 'video-badge';
                     badge.innerHTML = '▶ Video';
                     item.appendChild(badge);
-                    
-                    const img = document.createElement('img');
-                    img.src = file.thumbnailLink || getMediaUrl(file.id);
-                    img.alt = file.name;
-                    item.appendChild(img);
-                } else {
-                    const img = document.createElement('img');
-                    img.src = file.thumbnailLink || getMediaUrl(file.id);
-                    img.alt = file.name;
-                    img.loading = 'lazy';
-                    item.appendChild(img);
                 }
+                
+                const img = document.createElement('img');
+                img.src = getMediaUrl(file.id);
+                img.alt = file.name;
+                img.loading = 'lazy';
+                item.appendChild(img);
             });
 
             const content = document.createElement('div');
@@ -680,7 +771,7 @@
                 }
 
                 const img = document.createElement('img');
-                img.src = file.thumbnailLink || getMediaUrl(file.id);
+                img.src = getMediaUrl(file.id);
                 img.alt = file.name;
                 img.loading = 'lazy';
                 photoFrame.appendChild(img);
@@ -731,254 +822,112 @@
             const container = document.getElementById('folders-container');
 
             try {
-                console.log('Memulai load gallery...');
+                console.log('========================================');
+                console.log('🚀 Starting gallery load...');
+                console.log('========================================');
                 
+                // Test API connection first
+                const testResult = await testAPIConnection();
+                
+                if (!testResult.success) {
+                    throw new Error(`API Test Failed: ${testResult.error}`);
+                }
+
                 // Cek folder utama
+                console.log('📂 Checking main folder...');
                 const mainMedia = await getMediaFromFolder(FOLDER_ID);
-                console.log('Media di folder utama:', mainMedia.length);
+                console.log(`Main folder has ${mainMedia.length} media files`);
                 
                 if (mainMedia.length > 0) {
                     await renderFolder(FOLDER_ID, 'Album Utama', container);
                 }
 
                 // Cek subfolder
+                console.log('📁 Checking subfolders...');
                 const subfolders = await getAllSubfolders(FOLDER_ID);
-                console.log('Jumlah subfolder:', subfolders.length);
+                console.log(`Found ${subfolders.length} subfolders`);
                 
                 for (const folder of subfolders) {
-                    console.log('Memproses folder:', folder.name);
+                    console.log(`Processing subfolder: ${folder.name}`);
                     await renderFolder(folder.id, folder.name, container);
                 }
 
                 loading.style.display = 'none';
+                
+                console.log('========================================');
+                console.log(`✅ Gallery loaded! Total media: ${allMedia.length}`);
+                console.log('========================================');
                 
                 // Jika tidak ada media sama sekali
                 if (allMedia.length === 0) {
                     container.innerHTML = `
                         <div style="text-align: center; padding: 4rem 2rem; color: var(--secondary);">
                             <p style="font-size: 2rem; margin-bottom: 1rem;">📷</p>
-                            <h2 style="font-family: 'Playfair Display', serif; margin-bottom: 1rem;">Belum Ada Kenangan</h2>
-                            <p>Upload foto atau video pertama Anda ke Google Drive untuk memulai!</p>
+                            <h2 style="font-family: 'Playfair Display', serif; margin-bottom: 1rem;">Folder Kosong</h2>
+                            <p>Folder ini belum memiliki foto atau video.</p>
+                            <p style="margin-top: 1rem; font-size: 0.9rem;">Upload file ke Google Drive folder ini untuk mulai membuat galeri!</p>
                         </div>
                     `;
                 }
 
             } catch (error) {
-                console.error('Error detail:', error);
+                console.error('========================================');
+                console.error('❌ ERROR LOADING GALLERY:');
+                console.error(error);
+                console.error('========================================');
+                
                 loading.innerHTML = `
                     <div style="color: #c06c84; text-align: center;">
-                        <p style="font-size: 2rem;">😔</p>
-                        <h3 style="margin-bottom: 1rem;">Maaf, terjadi kesalahan</h3>
-                        <p style="font-size: 0.95rem; margin-bottom: 0.5rem;">
-                            ${error.message}
+                        <p style="font-size: 2rem;">⚠️</p>
+                        <h3 style="margin-bottom: 1rem;">Gagal Memuat Galeri</h3>
+                        <p style="font-size: 0.95rem; margin-bottom: 1rem; line-height: 1.6;">
+                            <strong>Error:</strong> ${error.message}
                         </p>
-                        <details style="margin-top: 1rem; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
-                            <summary style="cursor: pointer; font-weight: 600;">Detail Error</summary>
-                            <pre style="background: #fff; padding: 1rem; border-radius: 8px; margin-top: 0.5rem; font-size: 0.85rem; overflow-x: auto;">${error.stack}</pre>
-                        </details>
-                        <p style="margin-top: 1.5rem; font-size: 0.9rem; opacity: 0.8;">
-                            Pastikan:
-                            <br>• Folder sudah di-share sebagai "Anyone with the link"
-                            <br>• FOLDER_ID dan API_KEY sudah benar
-                            <br>• Koneksi internet stabil
-                        </p>
+                        
+                        <div class="debug-info">
+                            <h4>🔍 Informasi Debug</h4>
+                            <p><strong>Folder ID:</strong> ${FOLDER_ID}</p>
+                            <p><strong>API Key:</strong> ${API_KEY.substring(0, 20)}...</p>
+                            <p style="margin-top: 1rem;"><strong>Periksa browser console (F12) untuk detail lebih lanjut</strong></p>
+                        </div>
+                        
+                        <div style="background: #fff; padding: 1.5rem; border-radius: 12px; margin: 1.5rem auto; max-width: 650px; text-align: left;">
+                            <h4 style="margin-bottom: 1rem; color: var(--primary);">📋 Langkah Troubleshooting:</h4>
+                            <ol style="line-height: 2.2; color: var(--dark);">
+                                <li><strong>Verifikasi Sharing:</strong>
+                                    <ul style="margin-top: 0.5rem; list-style: circle; margin-left: 1.5rem;">
+                                        <li>Buka folder di Google Drive</li>
+                                        <li>Klik kanan → Share → "Anyone with the link"</li>
+                                        <li>Permission: "Viewer"</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Cek API Key:</strong>
+                                    <ul style="margin-top: 0.5rem; list-style: circle; margin-left: 1.5rem;">
+                                        <li>Buka <a href="https://console.cloud.google.com" target="_blank" style="color: var(--primary);">Google Cloud Console</a></li>
+                                        <li>Aktifkan "Google Drive API"</li>
+                                        <li>Buat API Key baru di Credentials</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Validasi Folder ID:</strong>
+                                    <ul style="margin-top: 0.5rem; list-style: circle; margin-left: 1.5rem;">
+                                        <li>URL: drive.google.com/drive/folders/<strong>[FOLDER_ID]</strong></li>
+                                        <li>Copy ID yang benar</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Pastikan ada konten:</strong> Folder harus berisi foto/video</li>
+                            </ol>
+                        </div>
+                        
+                        <button onclick="location.reload()" style="
+                            background: var(--primary);
+                            color: white;
+                            border: none;
+                            padding: 0.8rem 2rem;
+                            border-radius: 30px;
+                            cursor: pointer;
+                            font-size: 0.95rem;
+                            margin-top: 1rem;
+                            font-weight: 600;
+                        ">🔄 Coba Lagi</button>
                     </div>
-                `;
-            }
-        }
-
-        function openLightbox(mediaUrl, caption, isVid) {
-            const lightbox = document.getElementById('lightbox');
-            const mediaContainer = document.getElementById('lightbox-media');
-            const captionEl = document.getElementById('lightbox-caption');
-            
-            mediaContainer.innerHTML = '';
-            
-            if (isVid) {
-                const video = document.createElement('video');
-                video.src = mediaUrl;
-                video.controls = true;
-                video.autoplay = true;
-                mediaContainer.appendChild(video);
-            } else {
-                const img = document.createElement('img');
-                img.src = mediaUrl;
-                img.alt = caption;
-                mediaContainer.appendChild(img);
-            }
-            
-            captionEl.textContent = caption;
-            lightbox.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeLightbox() {
-            const lightbox = document.getElementById('lightbox');
-            const mediaContainer = document.getElementById('lightbox-media');
-            
-            const video = mediaContainer.querySelector('video');
-            if (video) {
-                video.pause();
-                video.src = '';
-            }
-            
-            lightbox.classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        function toggleSlideshow() {
-            if (allMedia.length === 0) {
-                alert('Belum ada foto atau video!');
-                return;
-            }
-
-            if (isPlaying) {
-                closeSlideshow();
-            } else {
-                startSlideshow();
-            }
-        }
-
-        function startSlideshow() {
-            currentSlideIndex = 0;
-            isPlaying = true;
-            isPaused = false;
-            
-            document.getElementById('slideshow-modal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-            
-            const playBtn = document.querySelector('.play-btn');
-            playBtn.classList.add('playing');
-            document.getElementById('play-icon').textContent = '⏹';
-            document.getElementById('play-text').textContent = 'Stop Kenangan';
-            
-            bgMusic.volume = 0.5;
-            bgMusic.play().catch(e => {
-                console.log('Musik tidak bisa diputar otomatis. Klik play untuk memulai musik.');
-                document.querySelector('.slideshow-btn').click();
-            });
-            
-            showSlide(currentSlideIndex);
-            startAutoSlide();
-        }
-
-        function closeSlideshow() {
-            isPlaying = false;
-            isPaused = false;
-            
-            document.getElementById('slideshow-modal').classList.remove('active');
-            document.body.style.overflow = 'auto';
-            
-            const playBtn = document.querySelector('.play-btn');
-            playBtn.classList.remove('playing');
-            document.getElementById('play-icon').textContent = '▶';
-            document.getElementById('play-text').textContent = 'Putar Kenangan';
-            
-            if (slideshowInterval) {
-                clearInterval(slideshowInterval);
-                slideshowInterval = null;
-            }
-            
-            bgMusic.pause();
-            bgMusic.currentTime = 0;
-        }
-
-        function toggleSlideshowPause() {
-            isPaused = !isPaused;
-            const pauseIcon = document.getElementById('pause-icon');
-            
-            if (isPaused) {
-                pauseIcon.textContent = '▶';
-                if (slideshowInterval) {
-                    clearInterval(slideshowInterval);
-                    slideshowInterval = null;
-                }
-                bgMusic.pause();
-            } else {
-                pauseIcon.textContent = '⏸';
-                startAutoSlide();
-                bgMusic.play();
-            }
-        }
-
-        function showSlide(index) {
-            if (index < 0) index = allMedia.length - 1;
-            if (index >= allMedia.length) index = 0;
-            
-            currentSlideIndex = index;
-            const media = allMedia[index];
-            const content = document.getElementById('slideshow-content');
-            const caption = document.getElementById('slideshow-caption');
-            const progress = document.getElementById('slideshow-progress');
-            
-            const existing = content.querySelector('img, video');
-            if (existing) existing.remove();
-            
-            if (media.isVideo) {
-                const video = document.createElement('video');
-                video.src = media.url;
-                video.controls = true;
-                video.autoplay = true;
-                content.insertBefore(video, caption);
-            } else {
-                const img = document.createElement('img');
-                img.src = media.url;
-                img.alt = media.caption;
-                content.insertBefore(img, caption);
-            }
-            
-            caption.textContent = media.caption;
-            progress.textContent = `${index + 1} / ${allMedia.length}`;
-        }
-
-        function nextSlide() {
-            showSlide(currentSlideIndex + 1);
-            if (!isPaused) resetAutoSlide();
-        }
-
-        function previousSlide() {
-            showSlide(currentSlideIndex - 1);
-            if (!isPaused) resetAutoSlide();
-        }
-
-        function startAutoSlide() {
-            if (slideshowInterval) clearInterval(slideshowInterval);
-            slideshowInterval = setInterval(() => {
-                nextSlide();
-            }, 5000);
-        }
-
-        function resetAutoSlide() {
-            if (slideshowInterval) clearInterval(slideshowInterval);
-            startAutoSlide();
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                if (isPlaying) {
-                    closeSlideshow();
-                } else {
-                    closeLightbox();
-                }
-            }
-            
-            if (isPlaying) {
-                if (e.key === 'ArrowRight') nextSlide();
-                if (e.key === 'ArrowLeft') previousSlide();
-                if (e.key === ' ') {
-                    e.preventDefault();
-                    toggleSlideshowPause();
-                }
-            }
-        });
-
-        document.getElementById('lightbox').addEventListener('click', (e) => {
-            if (e.target.id === 'lightbox') closeLightbox();
-        });
-
-        document.getElementById('slideshow-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'slideshow-modal') closeSlideshow();
-        });
-
-        loadGallery();
-
+                `
