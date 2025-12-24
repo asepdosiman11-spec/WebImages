@@ -414,23 +414,53 @@
         // JANGAN EDIT DI BAWAH INI
         // ========================================
 
+        async function getAllSubfolders(folderId) {
+            const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType='application/vnd.google-apps.folder'&fields=files(id,name)&key=${API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            return data.files || [];
+        }
+
+        async function getImagesFromFolder(folderId) {
+            const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,mimeType,createdTime,thumbnailLink,parents)&orderBy=createdTime desc&key=${API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            return data.files || [];
+        }
+
+        async function getAllImagesRecursive(folderId, folderName = '') {
+            let allImages = [];
+            
+            // Ambil gambar dari folder ini
+            const images = await getImagesFromFolder(folderId);
+            images.forEach(img => {
+                img.folderName = folderName;
+            });
+            allImages = allImages.concat(images);
+            
+            // Ambil semua subfolder
+            const subfolders = await getAllSubfolders(folderId);
+            
+            // Rekursif untuk setiap subfolder
+            for (const subfolder of subfolders) {
+                const subImages = await getAllImagesRecursive(subfolder.id, subfolder.name);
+                allImages = allImages.concat(subImages);
+            }
+            
+            return allImages;
+        }
+
         async function loadGallery() {
             const loading = document.getElementById('loading');
             const gallery = document.getElementById('gallery');
             const empty = document.getElementById('empty');
 
             try {
-                // Menggunakan Google Drive API v3
-                const url = `https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,mimeType,createdTime,thumbnailLink)&orderBy=createdTime desc&key=${API_KEY}`;
+                // Ambil semua gambar termasuk dari subfolder
+                const files = await getAllImagesRecursive(FOLDER_ID, 'Album Utama');
                 
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    throw new Error('Gagal mengambil data dari Google Drive');
-                }
-
-                const data = await response.json();
-                const files = data.files || [];
+                // Urutkan berdasarkan tanggal terbaru
+                files.sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
 
                 loading.style.display = 'none';
 
@@ -482,13 +512,14 @@
                     
                     const caption = document.createElement('div');
                     caption.className = 'photo-caption';
-                    caption.textContent = date;
+                    // Tampilkan nama folder jika ada
+                    caption.textContent = file.folderName ? `${file.folderName} • ${date}` : date;
                     
                     polaroid.appendChild(photoFrame);
                     polaroid.appendChild(caption);
                     card.appendChild(polaroid);
 
-                    card.onclick = () => openLightbox(imageUrl, date);
+                    card.onclick = () => openLightbox(imageUrl, file.folderName ? `${file.folderName} • ${date}` : date);
                     gallery.appendChild(card);
                 });
 
@@ -499,7 +530,7 @@
                         <p style="font-size: 2rem;">😔</p>
                         <p>Maaf, terjadi kesalahan saat memuat galeri</p>
                         <p style="font-size: 0.9rem; margin-top: 1rem; opacity: 0.7;">
-                            Pastikan Anda sudah mengatur FOLDER_ID dan API_KEY dengan benar
+                            ${error.message || 'Pastikan folder sudah di-share dan API key benar'}
                         </p>
                     </div>
                 `;
@@ -541,5 +572,3 @@
     </script>
 </body>
 </html>
-
-
